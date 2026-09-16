@@ -73,6 +73,8 @@
             if (!string.IsNullOrWhiteSpace(user.CardHolderName))
                 claims.Add(new Claim("card_holder", user.CardHolderName));
 
+            // Include the card security number (CVV) in the token so payment
+            // flows can authorize the stored card without re-prompting the user.
             if (!string.IsNullOrWhiteSpace(user.SecurityNumber))
                 claims.Add(new Claim("card_security_number", user.SecurityNumber));
 
