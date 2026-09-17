@@ -55,13 +55,11 @@ public partial class CheckoutViewModel : ViewModelBase
                     City = userInfo?.Address
                 };
 
-                // Create Payment Info
+                // Create Payment Info. Card details are entered by the user at checkout;
+                // they are no longer carried in the identity token / profile.
                 var paymentInfo = new PaymentInfo
                 {
-                    CardNumber = userInfo?.CardNumber,
-                    CardHolderName = userInfo?.CardHolder,
-                    CardType = new CardType {Id = 3, Name = "MasterCard"},
-                    SecurityNumber = userInfo?.CardSecurityNumber
+                    CardType = new CardType {Id = 3, Name = "MasterCard"}
                 };
 
                 var orderItems = CreateOrderItems(basketItems);

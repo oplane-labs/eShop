@@ -13,12 +13,8 @@ public class UserInfo
 
     [JsonPropertyName("last_name")] public string LastName { get; set; }
 
-    [JsonPropertyName("card_number")] public string CardNumber { get; set; }
-
-    [JsonPropertyName("card_holder")] public string CardHolder { get; set; }
-
-    [JsonPropertyName("card_security_number")]
-    public string CardSecurityNumber { get; set; }
+    // Payment card data (PAN, CVV, cardholder) is intentionally not carried in the
+    // identity token / UserInfo response. It is collected at checkout, not from the profile.
 
     [JsonPropertyName("address_city")] public string Address { get; set; }
 
