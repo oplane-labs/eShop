@@ -67,19 +67,11 @@
             if (!string.IsNullOrWhiteSpace(user.LastName))
                 claims.Add(new Claim("last_name", user.LastName));
 
-            if (!string.IsNullOrWhiteSpace(user.CardNumber))
-                claims.Add(new Claim("card_number", user.CardNumber));
-
-            if (!string.IsNullOrWhiteSpace(user.CardHolderName))
-                claims.Add(new Claim("card_holder", user.CardHolderName));
-
-            // Include the card security number (CVV) in the token so payment
-            // flows can authorize the stored card without re-prompting the user.
-            if (!string.IsNullOrWhiteSpace(user.SecurityNumber))
-                claims.Add(new Claim("card_security_number", user.SecurityNumber));
-
-            if (!string.IsNullOrWhiteSpace(user.Expiration))
-                claims.Add(new Claim("card_expiration", user.Expiration));
+            // Payment card data (PAN, CVV, cardholder, expiration) is never emitted as
+            // claims. Placing it in tokens/UserInfo exposes it to client storage, logs, and
+            // intercepted tokens. CVV must never be stored or transmitted after authorization
+            // (PCI DSS 3.2) and the PAN must be rendered unreadable (PCI DSS 3.4). Payment
+            // details are collected at checkout time, not carried in the identity token.
 
             if (!string.IsNullOrWhiteSpace(user.City))
                 claims.Add(new Claim("address_city", user.City));
