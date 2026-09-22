@@ -1,5 +1,6 @@
 ﻿namespace eShop.Ordering.UnitTests.Application;
 
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using eShop.Ordering.API.Application.Queries;
 using Order = eShop.Ordering.API.Application.Queries.Order;
@@ -108,12 +109,12 @@ public class OrdersWebApiTest
         // Arrange
         var fakeOrderId = 123;
         var fakeDynamicResult = new Order();
-        _orderQueriesMock.GetOrderAsync(Arg.Any<int>())
+        _orderQueriesMock.GetOrderAsync(Arg.Any<int>(), Arg.Any<string>())
             .Returns(Task.FromResult(fakeDynamicResult));
 
         // Act
         var orderServices = new OrderServices(_mediatorMock, _orderQueriesMock, _identityServiceMock, _loggerMock);
-        var result = await OrdersApi.GetOrderAsync(fakeOrderId, orderServices);
+        var result = await OrdersApi.GetOrderAsync(fakeOrderId, new DefaultHttpContext(), orderServices);
 
         // Assert
         Assert.IsInstanceOfType<Ok<Order>>(result.Result);
@@ -126,13 +127,13 @@ public class OrdersWebApiTest
         // Arrange
         var fakeOrderId = 123;
 #pragma warning disable NS5003
-        _orderQueriesMock.GetOrderAsync(Arg.Any<int>())
+        _orderQueriesMock.GetOrderAsync(Arg.Any<int>(), Arg.Any<string>())
             .Throws(new KeyNotFoundException());
 #pragma warning restore NS5003
 
         // Act
         var orderServices = new OrderServices(_mediatorMock, _orderQueriesMock, _identityServiceMock, _loggerMock);
-        var result = await OrdersApi.GetOrderAsync(fakeOrderId, orderServices);
+        var result = await OrdersApi.GetOrderAsync(fakeOrderId, new DefaultHttpContext(), orderServices);
 
         // Assert
         Assert.IsInstanceOfType<NotFound>(result.Result);

@@ -3,7 +3,7 @@
 public class OrderQueries(OrderingContext context)
     : IOrderQueries
 {
-    public async Task<Order> GetOrderAsync(int id)
+    public async Task<Order> GetOrderAsync(int id, string userId)
     {
         var order = await context.Orders
             .Include(o => o.OrderItems)
