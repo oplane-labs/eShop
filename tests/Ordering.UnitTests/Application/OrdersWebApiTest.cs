@@ -1,5 +1,6 @@
 ﻿namespace eShop.Ordering.UnitTests.Application;
 
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using eShop.Ordering.API.Application.Queries;
 using Order = eShop.Ordering.API.Application.Queries.Order;
@@ -113,7 +114,7 @@ public class OrdersWebApiTest
 
         // Act
         var orderServices = new OrderServices(_mediatorMock, _orderQueriesMock, _identityServiceMock, _loggerMock);
-        var result = await OrdersApi.GetOrderAsync(fakeOrderId, orderServices);
+        var result = await OrdersApi.GetOrderAsync(fakeOrderId, new DefaultHttpContext(), orderServices);
 
         // Assert
         Assert.IsInstanceOfType<Ok<Order>>(result.Result);
@@ -132,7 +133,7 @@ public class OrdersWebApiTest
 
         // Act
         var orderServices = new OrderServices(_mediatorMock, _orderQueriesMock, _identityServiceMock, _loggerMock);
-        var result = await OrdersApi.GetOrderAsync(fakeOrderId, orderServices);
+        var result = await OrdersApi.GetOrderAsync(fakeOrderId, new DefaultHttpContext(), orderServices);
 
         // Assert
         Assert.IsInstanceOfType<NotFound>(result.Result);

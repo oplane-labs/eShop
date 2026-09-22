@@ -77,22 +77,32 @@ public static class OrdersApi
         return TypedResults.Ok();
     }
 
-    public static async Task<Results<Ok<Order>, NotFound, BadRequest<string>>> GetOrderAsync(int orderId, [AsParameters] OrderServices services)
+    public static async Task<Results<Ok<Order>, NotFound, BadRequest<string>>> GetOrderAsync(int orderId, HttpContext httpContext, [AsParameters] OrderServices services)
     {
+        var userId = services.IdentityService.GetUserIdentity();
+        var sourceIp = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+
         if (orderId <= 0)
         {
+            services.Logger.LogWarning(
+                "User {UserId} requested order {OrderId} from {SourceIp}, Outcome: {Outcome}",
+                userId, orderId, sourceIp, "BadRequest");
             return TypedResults.BadRequest("Invalid order ID.");
         }
-
-        var userId = services.IdentityService.GetUserIdentity();
 
         try
         {
             var order = await services.Queries.GetOrderAsync(orderId, userId);
+            services.Logger.LogInformation(
+                "User {UserId} requested order {OrderId} from {SourceIp}, Outcome: {Outcome}",
+                userId, orderId, sourceIp, "Success");
             return TypedResults.Ok(order);
         }
         catch
         {
+            services.Logger.LogWarning(
+                "User {UserId} requested order {OrderId} from {SourceIp}, Outcome: {Outcome}",
+                userId, orderId, sourceIp, "NotFound");
             return TypedResults.NotFound();
         }
     }
