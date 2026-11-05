@@ -1,10 +1,15 @@
 ﻿namespace eShop.Ordering.API.Application.Queries;
 
-public class OrderQueries(OrderingContext context)
+using Microsoft.Extensions.Logging;
+
+public class OrderQueries(OrderingContext context, ILogger<OrderQueries> logger)
     : IOrderQueries
 {
-    public async Task<Order> GetOrderAsync(int id)
+    public async Task<Order> GetOrderAsync(int id, string userId)
     {
+        // Record who is requesting the order for auditing purposes.
+        logger.LogInformation("User {UserId} requested order {OrderId}", userId, id);
+
         var order = await context.Orders
             .Include(o => o.OrderItems)
             .FirstOrDefaultAsync(o => o.Id == id);

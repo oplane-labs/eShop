@@ -77,11 +77,18 @@ public static class OrdersApi
         return TypedResults.Ok();
     }
 
-    public static async Task<Results<Ok<Order>, NotFound>> GetOrderAsync(int orderId, [AsParameters] OrderServices services)
+    public static async Task<Results<Ok<Order>, NotFound, BadRequest<string>>> GetOrderAsync(int orderId, [AsParameters] OrderServices services)
     {
+        if (orderId <= 0)
+        {
+            return TypedResults.BadRequest("Invalid order ID.");
+        }
+
+        var userId = services.IdentityService.GetUserIdentity();
+
         try
         {
-            var order = await services.Queries.GetOrderAsync(orderId);
+            var order = await services.Queries.GetOrderAsync(orderId, userId);
             return TypedResults.Ok(order);
         }
         catch
@@ -168,6 +175,7 @@ public static class OrdersApi
     }
 }
 
+// TODO
 public record CreateOrderRequest(
     string UserId,
     string UserName,
