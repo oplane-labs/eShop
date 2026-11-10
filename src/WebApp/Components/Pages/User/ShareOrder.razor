@@ -1,0 +1,60 @@
+@page "/user/orders/{orderId:int}/share"
+@attribute [Authorize]
+@inject OrderingService OrderingService
+@inject NavigationManager Nav
+
+<PageTitle>Share order | AdventureWorks</PageTitle>
+<SectionContent SectionName="page-header-title">Share order #@OrderId</SectionContent>
+
+<div class="share-order">
+    @if (sharingStopped)
+    {
+        <p>This order is no longer shared. Anyone with the old link will no longer be able to see it.</p>
+        <a href="user/orders" class="button button-secondary">Back to orders</a>
+    }
+    else if (shareUrl is null)
+    {
+        <p>Creating link...</p>
+    }
+    else
+    {
+        <p>Send this link to anyone you'd like to keep up to date on your order. They don't need an account to see it.</p>
+        <input class="share-url" type="text" readonly value="@shareUrl" onclick="this.select()" />
+
+        <div class="share-actions">
+            <a href="user/orders" class="button button-secondary">Back to orders</a>
+            <form method="post" @formname="stop-sharing" @onsubmit="StopSharingAsync">
+                <AntiforgeryToken />
+                <button type="submit" class="button button-primary">Stop sharing</button>
+            </form>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int OrderId { get; set; }
+
+    [CascadingParameter]
+    public HttpContext? HttpContext { get; set; }
+
+    private string? shareUrl;
+    private bool sharingStopped;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (HttpMethods.IsPost(HttpContext?.Request.Method ?? string.Empty))
+        {
+            return;
+        }
+
+        var code = await OrderingService.CreateShareLink(OrderId);
+        shareUrl = Nav.ToAbsoluteUri($"track/{code}").ToString();
+    }
+
+    private async Task StopSharingAsync()
+    {
+        await OrderingService.StopSharing(OrderId);
+        sharingStopped = true;
+    }
+}

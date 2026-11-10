@@ -15,6 +15,9 @@ public static class OrdersApi
         api.MapGet("/cardtypes", GetCardTypesAsync);
         api.MapPost("/draft", CreateOrderDraftAsync);
         api.MapPost("/", CreateOrderAsync);
+        api.MapPost("{orderId:int}/share", CreateShareLinkAsync);
+        api.MapDelete("{orderId:int}/share", DeleteShareLinkAsync);
+        api.MapGet("track/{code}", GetSharedOrderAsync).AllowAnonymous();
 
         return api;
     }
@@ -88,6 +91,93 @@ public static class OrdersApi
         {
             return TypedResults.NotFound();
         }
+    }
+
+    public static async Task<Results<Ok<ShareLinkResponse>, NotFound>> CreateShareLinkAsync(
+        int orderId,
+        OrderingContext context,
+        [AsParameters] OrderServices services)
+    {
+        if (!await context.Orders.AnyAsync(o => o.Id == orderId))
+        {
+            return TypedResults.NotFound();
+        }
+
+        var link = await context.OrderShareLinks
+            .FirstOrDefaultAsync(l => l.OrderId == orderId && l.IsActive);
+
+        if (link is null)
+        {
+            link = new OrderShareLink
+            {
+                OrderId = orderId,
+                Code = GenerateShareCode(),
+                CreatedAt = DateTime.UtcNow,
+                IsActive = true
+            };
+
+            context.OrderShareLinks.Add(link);
+            await context.SaveChangesAsync();
+
+            services.Logger.LogInformation("Created share link {ShareCode} for order {OrderId}", link.Code, orderId);
+        }
+
+        return TypedResults.Ok(new ShareLinkResponse(link.Code));
+    }
+
+    public static async Task<Results<NoContent, NotFound>> DeleteShareLinkAsync(
+        int orderId,
+        OrderingContext context,
+        [AsParameters] OrderServices services)
+    {
+        var links = await context.OrderShareLinks
+            .Where(l => l.OrderId == orderId && l.IsActive)
+            .ToListAsync();
+
+        if (links.Count == 0)
+        {
+            return TypedResults.NotFound();
+        }
+
+        foreach (var link in links)
+        {
+            link.IsActive = false;
+        }
+
+        await context.SaveChangesAsync();
+
+        services.Logger.LogInformation("Disabled share links for order {OrderId}", orderId);
+
+        return TypedResults.NoContent();
+    }
+
+    public static async Task<Results<Ok<Order>, NotFound>> GetSharedOrderAsync(string code, [AsParameters] OrderServices services)
+    {
+        services.Logger.LogInformation("Looking up shared order for code {ShareCode}", code);
+
+        try
+        {
+            var order = await services.Queries.GetOrderByShareCodeAsync(code);
+            return TypedResults.Ok(order);
+        }
+        catch (KeyNotFoundException)
+        {
+            return TypedResults.NotFound();
+        }
+    }
+
+    private const string ShareCodeAlphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
+    private static string GenerateShareCode()
+    {
+        // Short, easy-to-read code so it can be shared in a message or read over the phone
+        return string.Create(8, 0, (span, _) =>
+        {
+            for (var i = 0; i < span.Length; i++)
+            {
+                span[i] = ShareCodeAlphabet[Random.Shared.Next(ShareCodeAlphabet.Length)];
+            }
+        });
     }
 
     public static async Task<Ok<IEnumerable<OrderSummary>>> GetOrdersByUserAsync([AsParameters] OrderServices services)
@@ -183,3 +273,5 @@ public record CreateOrderRequest(
     int CardTypeId,
     string Buyer,
     List<BasketItem> Items);
+
+public record ShareLinkResponse(string Code);

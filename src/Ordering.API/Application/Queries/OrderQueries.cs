@@ -34,6 +34,17 @@ public class OrderQueries(OrderingContext context)
         };
     }
 
+    public async Task<Order> GetOrderByShareCodeAsync(string code)
+    {
+        var link = await context.OrderShareLinks
+            .FirstOrDefaultAsync(l => l.Code == code && l.IsActive);
+
+        if (link is null)
+            throw new KeyNotFoundException();
+
+        return await GetOrderAsync(link.OrderId);
+    }
+
     public async Task<IEnumerable<OrderSummary>> GetOrdersFromUserAsync(string userId)
     {
         return await context.Orders

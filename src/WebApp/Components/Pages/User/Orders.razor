@@ -24,6 +24,7 @@ else
             <div>Date</div>
             <div class="total-header">Total</div>
             <div>Status</div>
+            <div></div>
         </li>
         @foreach (var order in orders)
         {
@@ -41,6 +42,9 @@ else
                     <span class="status @order.Status.ToLower()">
                         @order.Status
                     </span>
+                </div>
+                <div class="order-share">
+                    <a href="user/orders/@order.OrderNumber/share">Share</a>
                 </div>
             </li>
         }

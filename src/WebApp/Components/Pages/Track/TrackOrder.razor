@@ -1,0 +1,73 @@
+@page "/track/{code}"
+@attribute [StreamRendering]
+@inject OrderingService OrderingService
+
+<PageTitle>Order tracking | AdventureWorks</PageTitle>
+<SectionContent SectionName="page-header-title">Order tracking</SectionContent>
+
+<div class="track-order">
+    @if (loading)
+    {
+        <p>Loading...</p>
+    }
+    else if (order is null)
+    {
+        <p>We couldn't find this order. The link may have been turned off by the person who shared it.</p>
+    }
+    else
+    {
+        <div class="track-summary">
+            <div>
+                <div class="track-label">Order</div>
+                <div class="track-value">#@order.OrderNumber</div>
+            </div>
+            <div>
+                <div class="track-label">Placed</div>
+                <div class="track-value">@order.Date.ToString("d")</div>
+            </div>
+            <div>
+                <div class="track-label">Status</div>
+                <div class="track-value">
+                    <span class="status @order.Status.ToLower()">@order.Status</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="track-shipping">
+            <div class="track-label">Shipping to</div>
+            <address>
+                @order.Street<br />
+                @order.City, @order.State @order.Zipcode<br />
+                @order.Country
+            </address>
+        </div>
+
+        <ul class="track-items">
+            @foreach (var item in order.OrderItems)
+            {
+                <li class="track-item">
+                    <div class="track-item-name">@item.ProductName</div>
+                    <div class="track-item-units">@item.Units &times; $@item.UnitPrice.ToString("0.00")</div>
+                </li>
+            }
+        </ul>
+
+        <div class="track-total">
+            Total <strong>$@order.Total.ToString("0.00")</strong>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string Code { get; set; } = default!;
+
+    private TrackedOrderRecord? order;
+    private bool loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        order = await OrderingService.GetSharedOrder(Code);
+        loading = false;
+    }
+}

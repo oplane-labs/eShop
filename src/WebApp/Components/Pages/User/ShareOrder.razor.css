@@ -1,0 +1,32 @@
+.share-order {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 0 10rem;
+}
+
+.share-url {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #D2D2D2;
+    border-radius: 0.25rem;
+    font-size: 1rem;
+}
+
+.share-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+@media only screen and (max-width: 480px) {
+    .share-order {
+        padding: 0 1rem;
+    }
+}
+
+@media only screen and (min-width: 481px) and (max-width: 1024px) {
+    .share-order {
+        padding: 0 3rem;
+    }
+}
