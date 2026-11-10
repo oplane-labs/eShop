@@ -249,6 +249,38 @@ namespace Ordering.Infrastructure.Migrations
                     b.ToTable("requests", "ordering");
                 });
 
+            modelBuilder.Entity("eShop.Ordering.Infrastructure.Sharing.OrderShareLink", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("ordersharelinks", "ordering");
+                });
+
             modelBuilder.Entity("eShop.Ordering.Domain.AggregatesModel.BuyerAggregate.PaymentMethod", b =>
                 {
                     b.HasOne("eShop.Ordering.Domain.AggregatesModel.BuyerAggregate.Buyer", null)
@@ -313,6 +345,15 @@ namespace Ordering.Infrastructure.Migrations
                 {
                     b.HasOne("eShop.Ordering.Domain.AggregatesModel.OrderAggregate.Order", null)
                         .WithMany("OrderItems")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("eShop.Ordering.Infrastructure.Sharing.OrderShareLink", b =>
+                {
+                    b.HasOne("eShop.Ordering.Domain.AggregatesModel.OrderAggregate.Order", null)
+                        .WithMany()
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();

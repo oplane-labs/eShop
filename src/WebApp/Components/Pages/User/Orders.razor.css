@@ -53,6 +53,10 @@
     padding: 0.5rem 1rem;
 }
 
+.order-share {
+    text-align: right;
+}
+
 .order-status .status.cancelled {
     color: #FF4E4E;
     border: 1px solid #FF4E4E;

@@ -4,6 +4,8 @@ public interface IOrderQueries
 {
     Task<Order> GetOrderAsync(int id);
 
+    Task<Order> GetOrderByShareCodeAsync(string code);
+
     Task<IEnumerable<OrderSummary>> GetOrdersFromUserAsync(string userId);
 
     Task<IEnumerable<CardType>> GetCardTypesAsync();
